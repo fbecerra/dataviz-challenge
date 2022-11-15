@@ -150,33 +150,7 @@ Promise.all([
                 .style('fill', d => color(d[c]))
                 .style("stroke", "black")
                 .style("stroke-width", 0.5)
-                .style("opacity", circleOpacity)
-                .on("mouseover", (event, d) => {
-                    // Update circles
-                    d3.selectAll("circle")
-                        .style("opacity", 0.2);
-                    d3.select(event.target)
-                        .style("opacity", 1.0)
-                        .style("stroke", "black")
-                        .style("stroke-width", 2.0);
-
-                    // Update tooltip
-                    tooltip.html(`<p><strong>Country</strong> ${d.country}</p>
-                        <p><strong>Population</strong> ${d.population}</p>
-                        <p><strong>GDP per capita</strong> ${d[x]}</p>
-                        <p><strong>Life expectancy</strong> ${d[y]}</p>`)
-                        .style("left", (event.pageX + 10) + 'px')
-                        .style("top", event.pageY + 'px')
-                        .style("display", "block");
-                })
-                .on("mouseout", (event, d) => {
-                    d3.selectAll("circle")
-                        .style("opacity", circleOpacity)
-                        .style("stroke", "black")
-                        .style("stroke-width", 0.5);
-                    tooltip.style("display", "none");
-                });
-
+                .style("opacity", circleOpacity);
 
         // Calculate Voronoi cells
         let delaunay = d3.Delaunay.from(filteredData, d => xScale(d[x]), d => yScale(d[y]));
@@ -197,9 +171,9 @@ Promise.all([
                         .style("stroke-width", c => c.country === d[0].country ? 2.0 : 1.0);
         
                     tooltip.html(`<p><strong>Country</strong> ${d[0].country}</p>
-                        <p><strong>Population</strong> ${d[0].population}</p>
-                        <p><strong>GDP per capita</strong> ${d[0][x]}</p>
-                        <p><strong>Life expectancy</strong> ${d[0][y]}</p>`)
+                        <p><strong>Population</strong> ${d3.format(',')(d[0].population)}</p>
+                        <p><strong>GDP per capita</strong> ${d3.format(',.0f')(d[0][x])} dollars</p>
+                        <p><strong>Life expectancy</strong> ${d3.format('.2f')(d[0][y])} years</p>`)
                         .style("left", (event.pageX + 10) + 'px')
                         .style("top", event.pageY + 'px')
                         .style("display", "block");
