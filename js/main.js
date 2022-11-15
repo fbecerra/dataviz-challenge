@@ -74,7 +74,13 @@ Promise.all([
 
     let color = d3.scaleOrdinal(data.map(d => d[c]), d3.schemeCategory10);
 
-    xAxis.call(d3.axisBottom(xScale))
+    xAxis.call(d3.axisBottom(xScale).tickFormat(d => {
+        if ((d === 100) || (d === 1000) || (d === 10000) || (d === 100000)) {
+            return d3.format(',')(d);
+        } else {
+            return '';
+        }
+    }))
         .call(g => g.selectAll(".domain").remove())
         .call(g => g.selectAll(".tick line").clone()
               .attr("stroke-opacity", 0.1)
