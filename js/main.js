@@ -185,15 +185,17 @@ Promise.all([
                 });
     }
 
+    // Initial rendering
     updateChart(data);
 
-
+    // Add continents legend
     let legend = swatches({
         colour: color
     });
 
     d3.select("#legend").insert(() => legend);
 
+    // Animation + button
     let button =  d3.select("#slider-play");
 
     let stopAnimation = () => {
