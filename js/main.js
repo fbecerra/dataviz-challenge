@@ -19,7 +19,7 @@ let xLabel = xAxis.append("g")
     .append("text")
     .attr("class", "x axis-title")
     .attr("text-anchor", "end")
-    .style("font-size", "10px")
+    .style("font-size", "12px")
     .attr("fill", "black")
     .attr("transform", `translate(${width - padding}, -5)`);
 
@@ -31,9 +31,9 @@ let yLabel = yAxis.append("g")
     .append("text")
     .attr("class", "y axis-title")
     .attr("text-anchor", "end")
-    .style("font-size", "10px")
+    .style("font-size", "12px")
     .attr("fill", "black")
-    .attr("transform", `translate(10, ${padding}) rotate(-90)`);
+    .attr("transform", `translate(14, ${padding}) rotate(-90)`);
 
 let tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
@@ -57,7 +57,7 @@ Promise.all([
     let rExtent = d3.extent(data, d => d[r]);
     const xMin = 100;
     const xMax = 200000;
-    const yMin = 40;
+    const yMin = 20;
     const yMax = 90;
 
     let xScale = d3.scaleLog()
@@ -74,10 +74,20 @@ Promise.all([
 
     let color = d3.scaleOrdinal(data.map(d => d[c]), d3.schemeCategory10);
 
-    xAxis.call(d3.axisBottom(xScale));
-    yAxis.call(d3.axisLeft(yScale));
-    xLabel.text(x);
-    yLabel.text(y);
+    xAxis.call(d3.axisBottom(xScale))
+        .call(g => g.selectAll(".domain").remove())
+        .call(g => g.selectAll(".tick line").clone()
+              .attr("stroke-opacity", 0.1)
+              .attr("class", "axis-line")
+              .attr("y2", -height + 2 * padding));
+    yAxis.call(d3.axisLeft(yScale))
+        .call(g => g.selectAll(".domain").remove())
+        .call(g => g.selectAll(".tick line").clone()
+              .attr("stroke-opacity", 0.1)
+              .attr("class", "axis-line")
+              .attr("x2", width - 2 * padding));;
+    xLabel.text('Income per person (dollars)');
+    yLabel.text('Life Expectancy (years)');
 
     function updateChart(filteredData) {
         g.selectAll("circle")
