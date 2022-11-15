@@ -231,6 +231,9 @@ Promise.all([
     button
         .on("click", () => {
             if (playing === false) {
+                if (currentYear == maxYear) {
+                    currentYear = minYear;
+                }
                 button.html("Stop");
                 playing = true;
                 timer = setInterval(() => {
