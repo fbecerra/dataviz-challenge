@@ -2,8 +2,23 @@ const width = 700;
 const height = 550;
 const padding = 50;
 
+let currentYear;
+let playing = false;
+let timer;
+
 const rMin = 2;
 const rMax = 32;
+
+const minYear = 1950;
+const maxYear = 2018;
+
+const sliderWidth = 500;
+
+let sliderSvg = d3.select("#slider").append("svg")
+    .attr('width', sliderWidth)
+    .attr('height', 60)
+    .append('g')
+    .attr("transform", 'translate(20,10)');
 
 let svg = d3.select("#chart").append("svg")
     .attr("width", width)
@@ -58,12 +73,13 @@ Promise.all([
     const r = 'population';
     const c = 'continent';
 
-    let data = owidData[0].filter(d => d.year === 2015);
+    currentYear = minYear;
+    let data = owidData[0].filter(d => d.year === currentYear);
     
     let rExtent = d3.extent(data, d => d[r]);
-    const xMin = 100;
+    const xMin = 300;
     const xMax = 200000;
-    const yMin = 20;
+    const yMin = 10;
     const yMax = 90;
 
     let xScale = d3.scaleLog()
@@ -77,6 +93,26 @@ Promise.all([
     let rScale = d3.scaleSqrt()
         .range([rMin, rMax])
         .domain(rExtent);
+
+    let slider = d3.sliderHorizontal()
+        .min(minYear)
+        .max(maxYear)
+        .step(1)
+        .width(sliderWidth - 60)
+        .ticks(5)
+        .tickFormat(d => String(d))
+        .default(minYear)
+        .handle("M -8, 0 m 0, 0 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0")
+        .on('onchange', val => {
+            currentYear = val;
+            let filteredData = owidData[0].filter(d => d.year === currentYear);
+            updateChart(filteredData);
+        })
+        .on('start', () => {
+            if (playing === true) stopAnimation();
+        })
+
+    sliderSvg.call(slider);
 
     let color = d3.scaleOrdinal(data.map(d => d[c]), d3.schemeCategory10);
 
@@ -145,7 +181,7 @@ Promise.all([
         // Calculate Voronoi cells
         let delaunay = d3.Delaunay.from(filteredData, d => xScale(d[x]), d => yScale(d[y]));
         let voronoiData = delaunay.voronoi([padding, padding, width - padding, height - padding]);
-        let dataV = data.map((d, i) => [d, voronoiData.cellPolygon(i)]);
+        let dataV = filteredData.map((d, i) => [d, voronoiData.cellPolygon(i)]);
 
         // Add cells
         voronoi.selectAll("path")
@@ -183,4 +219,27 @@ Promise.all([
     });
 
     d3.select("#legend").insert(() => legend);
+
+    let button =  d3.select("#slider-play");
+
+    let stopAnimation = () => {
+        playing = false;
+        clearInterval(timer);
+        button.html("Play");
+    }
+
+    button
+        .on("click", () => {
+            if (playing === false) {
+                button.html("Stop");
+                playing = true;
+                timer = setInterval(() => {
+                    currentYear = currentYear + 1;
+                    slider.value(currentYear);
+                    if (currentYear === maxYear) stopAnimation();
+                }, 100);
+            } else {
+                stopAnimation();
+            }            
+        });
 })
