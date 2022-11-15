@@ -35,6 +35,10 @@ let yLabel = yAxis.append("g")
     .attr("fill", "black")
     .attr("transform", `translate(14, ${padding}) rotate(-90)`);
 
+let voronoi = svg.append("g")
+    .attr("class", "voronoiWrapper")
+    .attr("fill", "none");
+
 let tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("display", "none")
@@ -96,6 +100,8 @@ Promise.all([
     yLabel.text('Life Expectancy (years)');
 
     function updateChart(filteredData) {
+
+        // Plot circles        
         g.selectAll("circle")
             .data(filteredData)
             .join("circle")
@@ -129,6 +135,39 @@ Promise.all([
                         .style("opacity", 1.0)
                         .style("stroke", "black")
                         .style("stroke-width", 0.5);
+                    tooltip.style("display", "none");
+                });
+
+
+        // Calculate Voronoi cells
+        let delaunay = d3.Delaunay.from(filteredData, d => xScale(d[x]), d => yScale(d[y]));
+        let voronoiData = delaunay.voronoi([padding, padding, width - padding, height - padding]);
+        let dataV = data.map((d, i) => [d, voronoiData.cellPolygon(i)]);
+
+        // Add cells
+        voronoi.selectAll("path")
+            .data(dataV)
+            .join("path")
+                .style("pointer-events", 'all')
+                .style("opacity", 0.0)
+                .attr("stroke", "#ccc")
+                .attr("d", d => "M" + d[1].join("L") + "Z")
+                .on("mousemove", (event, d) => {
+                    svg.selectAll("circle")
+                        .style("opacity", c => c.country === d[0].country ? 1.0 : 0.2)
+                        .style("stroke-width", c => c.country === d[0].country ? 2.0 : 1.0);
+        
+                    tooltip.html(`<p><strong>Country</strong> ${d[0].country}</p>
+                        <p><strong>Population</strong> ${d[0].population}</p>
+                        <p><strong>GDP per capita</strong> ${d[0][x]}</p>
+                        <p><strong>Life expectancy</strong> ${d[0][y]}</p>`)
+                        .style("left", (event.pageX + 10) + 'px')
+                        .style("top", event.pageY + 'px')
+                        .style("display", "block");
+                })
+                .on("mouseout", () => {
+                    svg.selectAll("circle")
+                        .style("opacity", 1.0);
                     tooltip.style("display", "none");
                 });
     }
