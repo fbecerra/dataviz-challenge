@@ -47,6 +47,8 @@ let tooltip = d3.select("body").append("div")
     .style("left", 0)
     .style("top", 0);
 
+const circleOpacity = 0.8;
+
 Promise.all([
     d3.json("data/rosling.json")
 ]).then(function(owidData) {
@@ -112,6 +114,7 @@ Promise.all([
                 .style('fill', d => color(d[c]))
                 .style("stroke", "black")
                 .style("stroke-width", 0.5)
+                .style("opacity", circleOpacity)
                 .on("mouseover", (event, d) => {
                     // Update circles
                     d3.selectAll("circle")
@@ -132,7 +135,7 @@ Promise.all([
                 })
                 .on("mouseout", (event, d) => {
                     d3.selectAll("circle")
-                        .style("opacity", 1.0)
+                        .style("opacity", circleOpacity)
                         .style("stroke", "black")
                         .style("stroke-width", 0.5);
                     tooltip.style("display", "none");
@@ -167,7 +170,7 @@ Promise.all([
                 })
                 .on("mouseout", () => {
                     svg.selectAll("circle")
-                        .style("opacity", 1.0);
+                        .style("opacity", circleOpacity);
                     tooltip.style("display", "none");
                 });
     }
