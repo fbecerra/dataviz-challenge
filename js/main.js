@@ -2,6 +2,10 @@ const width = 700;
 const height = 550;
 const padding = 50;
 
+let currentYear;
+let playing = false;
+let timer;
+
 const rMin = 2;
 const rMax = 32;
 
@@ -69,7 +73,8 @@ Promise.all([
     const r = 'population';
     const c = 'continent';
 
-    let data = owidData[0].filter(d => d.year === minYear);
+    currentYear = minYear;
+    let data = owidData[0].filter(d => d.year === currentYear);
     
     let rExtent = d3.extent(data, d => d[r]);
     const xMin = 300;
@@ -99,8 +104,12 @@ Promise.all([
         .default(minYear)
         .handle("M -8, 0 m 0, 0 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0")
         .on('onchange', val => {
-            let filteredData = owidData[0].filter(d => d.year === val);
+            currentYear = val;
+            let filteredData = owidData[0].filter(d => d.year === currentYear);
             updateChart(filteredData);
+        })
+        .on('start', () => {
+            if (playing === true) stopAnimation();
         })
 
     sliderSvg.call(slider);
@@ -210,4 +219,27 @@ Promise.all([
     });
 
     d3.select("#legend").insert(() => legend);
+
+    let button =  d3.select("#slider-play");
+
+    let stopAnimation = () => {
+        playing = false;
+        clearInterval(timer);
+        button.html("Play");
+    }
+
+    button
+        .on("click", () => {
+            if (playing === false) {
+                button.html("Stop");
+                playing = true;
+                timer = setInterval(() => {
+                    currentYear = currentYear + 1;
+                    slider.value(currentYear);
+                    if (currentYear === maxYear) stopAnimation();
+                }, 100);
+            } else {
+                stopAnimation();
+            }            
+        });
 })
